@@ -1,5 +1,8 @@
+import React from 'react';
+import ReactDOM from 'react-dom';
 import logo from './logo.svg';
 import './App.css';
+import CandleStickCanvas from './components/CandleStickCanvas.js'
 
 function App() {
   return (
@@ -18,8 +21,10 @@ function App() {
           Learn React
         </a>
       </header>
+      <CandleStickCanvas />
     </div>
   );
 }
+
 
 export default App;
