@@ -1,5 +1,4 @@
 import React, {Component} from 'react';
-import ReactDOM from 'react-dom';
 
 class CandleStickCanvas extends Component {
 
@@ -10,35 +9,22 @@ class CandleStickCanvas extends Component {
         this.state = {
             blah: 1,
             candleStickData: [],
+            canvasWidthScale: 1,
+            canvasHeightScale: 1
         }
+
+        this.decrementScale = this.decrementScale.bind(this);
+        this.incrementScale = this.incrementScale.bind(this);
+        this.drawHorizontalGrid = this.drawHorizontalGrid.bind(this);
+        this.drawRectangle = this.drawRectangle.bind(this);
+        this.getCanvasContext = this.getCanvasContext.bind(this);
+        this.updateCanvasScale = this.updateCanvasScale.bind(this);
     }
 
     componentDidMount() {
 
-        var c = document.getElementById("myCanvas") !== null ? document.getElementById("myCanvas") : null;
-        var ctx = c !== null ? c.getContext("2d") : null;
-
-        if(ctx !== null || ctx !== undefined)
-        {
-            this.drawHorizontalGrid(ctx, 960, 540);
-            
-            for(var i = 0; i < 25; i++)
-            {
-                //Calculate scale of the candlesticks by total number / viewsize
-
-                var candleStickOffset = Math.ceil(960/25);
-                var candleStickHeight = this.getRandomInt(1,5);
-
-                var isBullish = this.getRandomInt(1,100) % 2 === 0 ? true : false;
-
-                var verticalOffsetRng = this.getRandomInt(1, 15);
-
-                var verticalOffset = isBullish ? 270+(verticalOffsetRng) : 270-(verticalOffsetRng);
-
-                this.drawRectangle(ctx, candleStickOffset*i, verticalOffset, candleStickOffset, candleStickHeight, isBullish);
-
-            }
-        }
+        var ctx = this.getCanvasContext();
+        this.canvasExampleScene(ctx);
     }
 
     drawRectangle(ctx, x, y, width, height, isBullish)
@@ -72,6 +58,8 @@ class CandleStickCanvas extends Component {
     {
 
         var lines = Math.ceil(height/25);
+
+        ctx.strokeStyle = 'black';
 
         for(var i = 0; i < lines; i++)
         {
@@ -124,12 +112,57 @@ class CandleStickCanvas extends Component {
         ctx.stroke();
     }
 
+    decrementScale(e)
+    {
+        this.setState(state => ({
+            canvasWidthScale: state.canvasWidthScale -= .1,
+            canvasHeightScale: state.canvasHeightScale -= .1,
+        }));
+
+        this.updateCanvasScale();
+    }
+
+    incrementScale(e)
+    {
+        this.setState(state => ({
+            canvasWidthScale: state.canvasWidthScale += .1,
+            canvasHeightScale: state.canvasHeightScale += .1,
+        }), this.updateCanvasScale());
+    }
+
+    updateCanvasScale(){
+        var ctx = this.getCanvasContext();
+        ctx.scale(this.state.canvasWidthScale, this.state.canvasHeightScale);
+        this.canvasExampleScene(ctx);
+    };
+
+    getCanvasContext()
+    {
+        var c = document.getElementById("myCanvas") !== null ? document.getElementById("myCanvas") : null;
+        var ctx = c !== null ? c.getContext("2d") : null;
+        ctx.clearRect(0, 0, c.width, c.height);
+
+        if(ctx !== null || ctx !== undefined)
+            return ctx;
+
+        return null;
+    }
+
+    canvasExampleScene(ctx)
+    {
+        this.drawHorizontalGrid(ctx, 960, 540);
+        this.drawRectangle(ctx, 0, 0, 100, 100, true)
+    }
+
     render()
     {        
-
+        var disableDecrease = this.state.canvasWidthScale <= 1 ? true:false;
+        //disabled={disableDecrease}
         return(
-            <div style={{padding: "5rem;"}}>
-                <canvas id="myCanvas" width="960" height="540" style={{border: "1px solid #000000"}}></canvas>
+            <div>
+                <canvas id="myCanvas" width={960} height={540} style={{border: "1px solid #000000"}}></canvas>
+                <input type="button" onClick={this.decrementScale} value="-" />
+                <input type="button" onClick={this.incrementScale} value="+"/>
             </div>
         );
     }
